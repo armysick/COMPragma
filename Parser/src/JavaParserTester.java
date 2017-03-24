@@ -19,6 +19,9 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.comments.Comment;
+import com.github.javaparser.ast.comments.JavadocComment;
+import com.github.javaparser.ast.comments.LineComment;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 
@@ -27,6 +30,7 @@ public class JavaParserTester {
     public static void main(String[] args) {
         try {
 
+        	LineComment lcmm = new LineComment("ola!");
             // creates an input stream for the file to be parsed
             FileInputStream in = new FileInputStream("Test.java");
 
@@ -38,6 +42,8 @@ public class JavaParserTester {
             new MethodChangerVisitor().visit(cu, null);
 
             // prints the resulting compilation unit to default system output
+            
+            cu.setComment(lcmm);
             System.out.println(cu.toString());
         } catch (ParseException e) {
             throw new RuntimeException("Error message:\n", e);
@@ -59,8 +65,25 @@ public class JavaParserTester {
                 //n.setName("test2");
             	for(int i=0; i<n.getBody().getAllContainedComments().size();i++){
             		String[] str = n.getBody().getAllContainedComments().get(i).getContent().split(" ");
-            		if(str[0].toUpperCase().equals("@PRAGMA"))
+            		if(str[0].toUpperCase().equals("@PRAGMA")){   //  @Pragma
             			 System.out.println("FOUND A PRAGMA:" + n.getBody().getAllContainedComments().get(i).getContent());
+            			 if(str[1].toUpperCase().equals("TUNER")){   // tuner
+            				 if(str[2].toUpperCase().equals("EXPLORE")){   // explore
+            					 System.out.println("cenas: " + str[3]);
+            					 String aux = str[3];
+            					 aux = aux.substring(aux.indexOf("(") + 1);
+            					 aux = aux.substring(0, aux.indexOf(","));
+            					 int STEP = Integer.parseInt(aux);
+            					 System.out.println("STEPERINO: " + STEP);
+            					 int max_STEP = Integer.parseInt(str[4].substring(0, str[4].indexOf(')')));
+            					 System.out.println("MAX_STEPERINO: " + max_STEP);
+            					 System.out.println("Children node: " + n.getBody().getAllContainedComments().get(i).getEndLine());
+            					 
+            					 System.out.println("O get body: " +  n.getBody().toString());
+            					 //TODO RunChanged(STEP, max_STEP, n.getBody().getAllContainedComments().get(i).getEndLine(), n);
+            				 }
+            			 }
+            		}
             	}
                
             }

@@ -12,8 +12,19 @@
  */
 
 
+import java.io.BufferedReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,19 +60,46 @@ public class JavaParserTester {
     public static void main(String[] args) {
         try {
 
-            // creates an input stream for the file to be parsed
-            FileInputStream in = new FileInputStream("Test.java");
+            
+            
+            										
+            
+        	// Rename it so you don't have to create differently named classes to run again.
+			// In the end of the execution it shall be reset to the original
+            Path ogpath = Paths.get("Test.java");
+            Files.move(ogpath, ogpath.resolveSibling("Test2.java")); 
+            
 
+         // creates an input stream for the file to be parsed
+            FileInputStream in = new FileInputStream("Test2.java");
             // parse the file
             cu = JavaParser.parse(in);
             // visit and change the methods names and parameters
             new MethodChangerVisitor().visit(cu, null);
+            
+            
+            in.close();
+            
+            try{
+            	// Rename original file to original name, replacing intermediate generated files
+            	Path secondpath = Paths.get("Test2.java");
+                Files.move(secondpath, secondpath.resolveSibling("Test.java"), StandardCopyOption.REPLACE_EXISTING);
+            }
+            catch(Exception e){
+            	throw new RuntimeException("Error! File may have been renamed to <filename>2.java and not sucessfully renamed back!");
+            }
 
         } catch (ParseException e) {
             throw new RuntimeException("Error message:\n", e);
         } catch (FileNotFoundException e) {
             throw new RuntimeException("Error message:\n", e);
-        }
+        } catch (IOException e) {
+			throw new RuntimeException("Error changing file name\n", e);
+		}
+        
+        
+        
+        
 
     }
 
@@ -105,7 +143,9 @@ public class JavaParserTester {
         	int max=Integer.parseInt(parsingString[4].split("\\)")[0]);
         	for(int i=min;i<=max;i++){
         		initializeVariable(n,i);
-        		printOutputCode();
+        		//printOutputCode();
+        		writeToOutputFiles();
+        		runCreatedFile();
         	}
         	
         }
@@ -142,6 +182,7 @@ public class JavaParserTester {
         		}
         	}
         	//list.add(asserts);
+        	
         	n.getBody().setStmts(list);
         }
         
@@ -149,5 +190,55 @@ public class JavaParserTester {
         	// prints the resulting compilation unit to default system output
             System.out.println(cu.toString());
         }
+        
+        
+        // Writes to Intermediate generated files (Named <classname>.java) one at a time, replacing the previous one
+        private void writeToOutputFiles() {
+        	try{
+        		PrintWriter writer = new PrintWriter("Test.java", "UTF-8");
+        	    writer.println(cu.toString());
+        	    writer.close();
+        	} catch (IOException e) {
+        	   // do something
+        		System.out.println("Error writing to files!");
+        		System.exit(0);
+        	}
+        	
+        }
+        
+        
+        // Runs, one by one, the generated files on writeToOutputFiles()
+        private void runCreatedFile(){
+        	try{
+        		//Process compile = Runtime.getRuntime().exec("javac pragmaf"+(file_num-1)+".java");
+        		//Process execute = Runtime.getRuntime().exec("java pragmaf"+(file_num-1));
+        		//runProcess("javac pragmaf"+(file_num-1)+".java");
+        		runProcess("javac Test.java");
+        		runProcess("java Test");
+        	}catch(Exception e ){
+        		System.out.println("Error on running generated test files!");
+        	}
+        }
+        
+        //http://stackoverflow.com/questions/4842684/how-to-compile-run-java-program-in-another-java-program
+        private static void runProcess(String command) throws Exception {
+            Process pro = Runtime.getRuntime().exec(command);
+            printLines(command + " stdout:", pro.getInputStream());
+            printLines(command + " stderr:", pro.getErrorStream());
+            pro.waitFor();
+            System.out.println(command + " exitValue() " + pro.exitValue());
+          }
+        
+        //http://stackoverflow.com/questions/4842684/how-to-compile-run-java-program-in-another-java-program
+        private static void printLines(String name, InputStream ins) throws Exception {
+            String line = null;
+            BufferedReader in = new BufferedReader(
+                new InputStreamReader(ins));
+            while ((line = in.readLine()) != null) {
+                System.out.println(name + " " + line);
+            }
+          }
+        
+        
     }
 }

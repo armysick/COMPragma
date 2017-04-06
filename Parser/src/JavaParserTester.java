@@ -37,11 +37,14 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.body.VariableDeclaratorId;
 import com.github.javaparser.ast.comments.Comment;
 import com.github.javaparser.ast.comments.JavadocComment;
+import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LiteralExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.expr.AssignExpr.Operator;
 import com.github.javaparser.ast.stmt.AssertStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
@@ -161,7 +164,7 @@ public class JavaParserTester {
 			int max = Integer.parseInt(parsingString[4].split("\\)")[0]);
 			for (int i = min; i <= max; i++) {
 				initializeVariable(n, i);
-				// printOutputCode();
+				//printOutputCode();
 				writeToOutputFiles(var_name, max_abs_error);
 				runCreatedFile();
 			}
@@ -172,18 +175,9 @@ public class JavaParserTester {
 
 			List<Statement> list = new ArrayList<Statement>();
 
-			Type type = new PrimitiveType(Primitive.Int);
+			IntegerLiteralExpr integer = new IntegerLiteralExpr(currentNum + "");  //É preciso saber o type da variavel
 
-			IntegerLiteralExpr integer = new IntegerLiteralExpr(currentNum + "");
-
-			VariableDeclarator var = new VariableDeclarator(new VariableDeclaratorId(parsingString[3].split("\\(")[0]),
-					integer);
-
-			List<VariableDeclarator> args = new ArrayList<VariableDeclarator>();
-
-			args.add(var);
-
-			Expression expr = new VariableDeclarationExpr(type, args);
+			AssignExpr expr = new AssignExpr(new NameExpr("STEP"),integer,Operator.assign);
 
 			Statement asserts = new ExpressionStmt(expr);
 
@@ -195,7 +189,7 @@ public class JavaParserTester {
 					break;
 				}
 				if (list.get(i).toString()
-						.equals("int " + parsingString[3].split("\\(")[0] + " = " + (currentNum - 1) + ";")) {
+						.equals(parsingString[3].split("\\(")[0] + " = " + (currentNum - 1) + ";")) {
 					list.remove(i);
 					list.add(i, asserts);
 					break;
@@ -240,7 +234,7 @@ public class JavaParserTester {
 				// Process execute = Runtime.getRuntime().exec("java
 				// pragmaf"+(file_num-1));
 				// runProcess("javac pragmaf"+(file_num-1)+".java");
-				runProcess("C:\\Program Files (x86)\\Java\\jdk1.8.0_101\\bin\\javac Test.java");
+				runProcess("C:\\Program Files(x86)\\Java\\jdk1.8.0_121\\bin\\javac Test.java");  //tem q se indicar o caminho do java? nao está nas variaveis ambientes PATH?
 				runProcess("java Test");
 			} catch (Exception e) {
 				System.out.println(

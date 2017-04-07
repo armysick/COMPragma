@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,7 +59,9 @@ public class JavaParserTester {
 	private static String[] parsingString;
 	private static CompilationUnit cu;
 	private static int startLine;
-
+	private static List<SimpleEntry<Float,Float>> results = new ArrayList<SimpleEntry<Float,Float>>();
+	private static float currentNo;
+	
 	public static void main(String[] args) {
 		try {
 
@@ -94,7 +97,9 @@ public class JavaParserTester {
 		} catch (IOException e) {
 			throw new RuntimeException("Error changing file name\n", e);
 		}
-
+		for(SimpleEntry p:results){
+			System.out.println(p.getKey()+ " " + p.getValue());
+		}
 	}
 
 	/**
@@ -162,34 +167,45 @@ public class JavaParserTester {
 
 			int min = Integer.parseInt(parsingString[3].split("\\(")[1].split(",")[0]);
 			int max = Integer.parseInt(parsingString[4].split("\\)")[0]);
-			for (int i = min; i <= max; i++) {
-				initializeVariable(n, i);
+			for (currentNo = min; currentNo <= max; currentNo++) {
+				initializeVariable(n);			
 				//printOutputCode();
 				writeToOutputFiles(var_name, max_abs_error);
 				runCreatedFile();
 			}
 			System.out.println("Done!");
 		}
+		
+		/*private void getVariableType(List<Statement> list, String variableName){
+			for(int i = 0; i < list.size(); i++){
+				System.out.println(list.get(i).getChildrenNodes().get(0).getChildrenNodes().get(0));
+				switch(list.get(i).getChildrenNodes().get(0).getChildrenNodes().get(1).toString()){
+				case Primitive.Boolean.toString():
+					break;
+				}
+			}
+		}*/
 
-		private void initializeVariable(MethodDeclaration n, int currentNum) {
+		private void initializeVariable(MethodDeclaration n) {
 
 			List<Statement> list = new ArrayList<Statement>();
 
-			IntegerLiteralExpr integer = new IntegerLiteralExpr(currentNum + "");  //É preciso saber o type da variavel
+			IntegerLiteralExpr integer = new IntegerLiteralExpr(currentNo + "");  //É preciso saber o type da variavel
 
-			AssignExpr expr = new AssignExpr(new NameExpr("STEP"),integer,Operator.assign);
-
+			AssignExpr expr = new AssignExpr(new NameExpr(parsingString[3].split("\\(")[0]),integer,Operator.assign);
+			
 			Statement asserts = new ExpressionStmt(expr);
 
 			list = n.getBody().getStmts();
 
 			for (int i = 0; i < list.size(); i++) {
+				
 				if (list.get(i).getBeginLine() == startLine + 1) {
 					list.add(i, asserts);
 					break;
 				}
 				if (list.get(i).toString()
-						.equals(parsingString[3].split("\\(")[0] + " = " + (currentNum - 1) + ";")) {
+						.equals(parsingString[3].split("\\(")[0] + " = " + (currentNo - 1) + ";")) {
 					list.remove(i);
 					list.add(i, asserts);
 					break;
@@ -234,7 +250,7 @@ public class JavaParserTester {
 				// Process execute = Runtime.getRuntime().exec("java
 				// pragmaf"+(file_num-1));
 				// runProcess("javac pragmaf"+(file_num-1)+".java");
-				runProcess("C:\\Program Files(x86)\\Java\\jdk1.8.0_121\\bin\\javac Test.java");  //tem q se indicar o caminho do java? nao está nas variaveis ambientes PATH?
+				runProcess("javac Test.java");
 				runProcess("java Test");
 			} catch (Exception e) {
 				System.out.println(
@@ -256,7 +272,12 @@ public class JavaParserTester {
 			String line = null;
 			BufferedReader in = new BufferedReader(new InputStreamReader(ins));
 			while ((line = in.readLine()) != null) {
-				System.out.println(name + " " + line);
+				System.out.println(line);
+				if(line.split(":")[0].equals("420691337")){
+					results.add(new SimpleEntry<Float,Float>(currentNo,Float.parseFloat(line.split(":")[1])));
+					
+				}
+					
 			}
 		}
 
@@ -272,7 +293,7 @@ public class JavaParserTester {
 				if (z == line_nr)
 					appended_split[z] = "//" + orphan.getContent();
 				else if (z == line_nr+1)
-					appended_split[z] = "System.out.println(\"acc: \" + " + var_name + " );";
+					appended_split[z] = "System.out.println(\"420691337:\" + " + var_name + " );";
 				else if (z >= line_nr + 2)
 					appended_split[z] = unedited_split[z - 2];
 				else

@@ -16,37 +16,31 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.io.File;
+import java.text.DecimalFormat;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.nio.file.Files;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.body.VariableDeclaratorId;
 import com.github.javaparser.ast.comments.Comment;
-import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
-import com.github.javaparser.ast.expr.LiteralExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.expr.AssignExpr.Operator;
-import com.github.javaparser.ast.stmt.AssertStmt;
+import com.github.javaparser.ast.expr.DoubleLiteralExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.PrimitiveType;
@@ -59,8 +53,8 @@ public class JavaParserTester {
 	private static String[] parsingString;
 	private static CompilationUnit cu;
 	private static int startLine;
-	private static List<SimpleEntry<Float,Float>> results = new ArrayList<SimpleEntry<Float,Float>>();
-	private static float currentNo;
+	private static List<SimpleEntry<Double,Double>> results = new ArrayList<SimpleEntry<Double,Double>>();
+	private static double currentNo;
 	
 	public static void main(String[] args) {
 		try {
@@ -168,50 +162,96 @@ public class JavaParserTester {
 			int min = Integer.parseInt(parsingString[3].split("\\(")[1].split(",")[0]);
 			int max = Integer.parseInt(parsingString[4].split("\\)")[0]);
 			for (currentNo = min; currentNo <= max; currentNo++) {
-				initializeVariable(n);			
-				//printOutputCode();
+				try {
+					initializeVariable(n);
+				} catch (Exception e) {
+					return;
+				}			
 				writeToOutputFiles(var_name, max_abs_error);
 				runCreatedFile();
 			}
 			System.out.println("Done!");
 		}
 		
-		/*private void getVariableType(List<Statement> list, String variableName){
+		private String getVariableType(List<Statement> list, String variableName){
 			for(int i = 0; i < list.size(); i++){
-				System.out.println(list.get(i).getChildrenNodes().get(0).getChildrenNodes().get(0));
-				switch(list.get(i).getChildrenNodes().get(0).getChildrenNodes().get(1).toString()){
-				case Primitive.Boolean.toString():
-					break;
+				if(list.get(i).getChildrenNodes().get(0).getChildrenNodes().get(1).toString().equals(variableName)){
+					String type = list.get(i).getChildrenNodes().get(0).getChildrenNodes().get(0).toString();
+					if(type.equals("int")||type.equals("double")||type.equals("float")){
+						return type;
+					}
+					else if(!list.get(i).getChildrenNodes().get(0).toString().matches("[\\w\\s]*[*+-/]?=[\\w\\s]*" + variableName)) return "erro";
 				}
 			}
-		}*/
+			return "";
+		}
 
-		private void initializeVariable(MethodDeclaration n) {
+		private Expression initializeExpression(String type){
+			Expression expr = null;
+			switch(type){
+			case "int" : 
+				expr = new IntegerLiteralExpr((int)currentNo + "");
+				break;
+			case "double" : 
+				expr = new DoubleLiteralExpr(currentNo + "");
+				break;
+			case "float" : 
+				expr = new DoubleLiteralExpr(currentNo + "");
+				break;
+			}
+			return expr;
+		}
+		
+		private void initializeVariable(MethodDeclaration n) throws Exception {
 
 			List<Statement> list = new ArrayList<Statement>();
-
-			IntegerLiteralExpr integer = new IntegerLiteralExpr(currentNo + "");  //É preciso saber o type da variavel
-
-			AssignExpr expr = new AssignExpr(new NameExpr(parsingString[3].split("\\(")[0]),integer,Operator.assign);
-			
-			Statement asserts = new ExpressionStmt(expr);
-
+			Expression exprAdded = null;
 			list = n.getBody().getStmts();
 
+			String type = getVariableType(list,parsingString[3].split("\\(")[0]);
+			
+			if(type.equals("erro")){
+				//caso nao seja um tipo válido
+				System.out.println("Wrong type of variable declared in pragma. Only int/double/float are allowed!");
+				Exception e = new Exception();
+				throw e;
+			}else if(!type.equals("")){
+				//caseo ja esteja inicializado
+				Expression initialized = initializeExpression(type);
+				exprAdded = new AssignExpr(new NameExpr(parsingString[3].split("\\(")[0]),initialized,Operator.assign);
+			}else{
+				//se não estiver inicializado
+				Type typeOfVariable = new PrimitiveType(Primitive.Double);
+				VariableDeclarator var = new VariableDeclarator(new VariableDeclaratorId(parsingString[3].split("\\(")[0]),new DoubleLiteralExpr(currentNo + ""));
+				List<VariableDeclarator> args = new ArrayList<VariableDeclarator>();
+				args.add(var);
+				exprAdded = new VariableDeclarationExpr(typeOfVariable, args);
+			}
+			
+			Statement asserts = new ExpressionStmt(exprAdded);
+			
+			constructCode(list, asserts,n);
+		}
+		
+		//constroi e actualiza o codigo
+		private void constructCode(List<Statement> list , Statement asserts, MethodDeclaration n){
+			DecimalFormat format=new DecimalFormat("#,###.#");
+			
 			for (int i = 0; i < list.size(); i++) {
 				
 				if (list.get(i).getBeginLine() == startLine + 1) {
 					list.add(i, asserts);
 					break;
 				}
+
 				if (list.get(i).toString()
-						.equals(parsingString[3].split("\\(")[0] + " = " + (currentNo - 1) + ";")) {
+						.contains(parsingString[3].split("\\(")[0] + " = " + format.format(currentNo - 1) + ";") || list.get(i).toString()
+						.contains(parsingString[3].split("\\(")[0] + " = " + (currentNo - 1) + ";")) {
 					list.remove(i);
 					list.add(i, asserts);
 					break;
 				}
 			}
-			// list.add(asserts);
 
 			n.getBody().setStmts(list);
 		}
@@ -231,7 +271,6 @@ public class JavaParserTester {
 				//System.out.println("full str: \n " + full_string);
 				
 				PrintWriter writer = new PrintWriter("Test.java", "UTF-8");
-				// writer.println(cu.toString());
 				writer.println(full_string);
 				writer.close();
 			} catch (IOException e) {
@@ -274,7 +313,7 @@ public class JavaParserTester {
 			while ((line = in.readLine()) != null) {
 				System.out.println(line);
 				if(line.split(":")[0].equals("420691337")){
-					results.add(new SimpleEntry<Float,Float>(currentNo,Float.parseFloat(line.split(":")[1])));
+					results.add(new SimpleEntry<Double,Double>(currentNo,Double.parseDouble(line.split(":")[1])));
 					
 				}
 					

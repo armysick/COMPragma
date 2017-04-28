@@ -12,13 +12,16 @@
  */
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.text.DecimalFormat;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -91,7 +94,26 @@ public class JavaParserTester {
 		} catch (IOException e) {
 			throw new RuntimeException("Error changing file name\n", e);
 		}
+
+		FileOutputStream out;
+		Path file = null;
+		try {
+			out = new FileOutputStream("results.txt");
+			file = Paths.get("results.txt");
+			out.write("".getBytes());
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 		for(SimpleEntry p:results){
+			
+			try {
+				Files.write(file, (p.getKey()+ "||" + p.getValue()+" __ ").getBytes(), StandardOpenOption.APPEND);
+			} catch (IOException e) {
+				System.out.println("ERROR WRITING TO FILE");
+				e.printStackTrace();
+			}
 			System.out.println(p.getKey()+ " " + p.getValue());
 		}
 	}
@@ -125,10 +147,14 @@ public class JavaParserTester {
 					if (parsingString[0].toUpperCase().equals("@PRAGMA")
 							&& parsingString[1].toUpperCase().equals("TUNER")) {
 						String command = parsingString[2].toUpperCase();
+						
 						startLine = n.getBody().getAllContainedComments().get(i).getBeginLine();
 						switch (command) {
 
 						case "EXPLORE":
+							
+							double reference = Double.parseDouble(parsingString[5].split("=")[1].substring(0, parsingString[5].split("=")[1].length()-1));
+							System.out.println("REFERENCIA: "+ reference);
 							explore(n, var_name, max_abs_error);
 							var_name = null; // Set to null, so it doesn't
 												// "carry over"

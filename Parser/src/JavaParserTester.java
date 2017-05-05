@@ -316,7 +316,7 @@ public class JavaParserTester {
 				// Process execute = Runtime.getRuntime().exec("java
 				// pragmaf"+(file_num-1));
 				// runProcess("javac pragmaf"+(file_num-1)+".java");
-				runProcess("C:\\Program Files (x86)\\Java\\jdk1.8.0_101\\bin\\javac Test.java", false);
+				runProcess("javac Test.java", false);
 				runProcess("java Test", true);
 			} catch (Exception e) {
 				System.out.println(

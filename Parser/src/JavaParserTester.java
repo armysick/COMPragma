@@ -58,6 +58,7 @@ public class JavaParserTester {
 	private static int startLine;
 	private static List<SimpleEntry<Double,Double>> results = new ArrayList<SimpleEntry<Double,Double>>();
 	private static double currentNo;
+	private static long timeBegin, timeEnd;
 	
 	public static void main(String[] args) {
 		try {
@@ -315,8 +316,8 @@ public class JavaParserTester {
 				// Process execute = Runtime.getRuntime().exec("java
 				// pragmaf"+(file_num-1));
 				// runProcess("javac pragmaf"+(file_num-1)+".java");
-				runProcess("javac Test.java");
-				runProcess("java Test");
+				runProcess("C:\\Program Files (x86)\\Java\\jdk1.8.0_101\\bin\\javac Test.java", false);
+				runProcess("java Test", true);
 			} catch (Exception e) {
 				System.out.println(
 						"Error on running generated test files! Please make sure you have javac and java installed and has a valid path!");
@@ -324,11 +325,16 @@ public class JavaParserTester {
 		}
 
 		// http://stackoverflow.com/questions/4842684/how-to-compile-run-java-program-in-another-java-program
-		private static void runProcess(String command) throws Exception {
+		private static void runProcess(String command, boolean save_timing) throws Exception {
+			
+			timeBegin = System.currentTimeMillis();
 			Process pro = Runtime.getRuntime().exec(command);
 			printLines(command + " stdout:", pro.getInputStream());
 			printLines(command + " stderr:", pro.getErrorStream());
 			pro.waitFor();
+			timeEnd = System.currentTimeMillis();
+			if (save_timing)
+			System.out.println("diferença de tempo = " + (timeEnd-timeBegin));
 			System.out.println(command + " exitValue() " + pro.exitValue());
 		}
 

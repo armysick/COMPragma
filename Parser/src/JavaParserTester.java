@@ -147,7 +147,11 @@ public class JavaParserTester {
 
 					if (parsingString[0].toUpperCase().equals("@PRAGMA")
 							&& parsingString[1].toUpperCase().equals("TUNER")) {
-						String command = parsingString[2].toUpperCase();
+						String command;
+						if(!parsingString[2].toUpperCase().equals("END")){
+							command= parsingString[2].toUpperCase();
+						}
+						else command =  parsingString[3].toUpperCase();
 						
 						startLine = n.getBody().getAllContainedComments().get(i).getBeginLine();
 						switch (command) {
@@ -163,8 +167,8 @@ public class JavaParserTester {
 							break;
 
 						case "MAX_ABS_ERROR":
-							var_name = parsingString[3];
-							max_abs_error = Integer.parseInt(parsingString[4]);
+							var_name = parsingString[4];
+							max_abs_error = Integer.parseInt(parsingString[5]);
 							System.out.println("\nmax_abs_error:\n var_name received: " + var_name
 									+ "\n max_err_received: " + max_abs_error);
 							break;
@@ -234,7 +238,6 @@ public class JavaParserTester {
 			List<Statement> list = new ArrayList<Statement>();
 			Expression exprAdded = null;
 			list = n.getBody().getStmts();
-
 			String type = getVariableType(list,parsingString[3].split("\\(")[0]);
 			
 			if(type.equals("erro")){
@@ -293,9 +296,10 @@ public class JavaParserTester {
 		private void writeToOutputFiles(String var_name, int max_abs_error) {
 			try {
 				String unedited_string = cu.toString();
+				
 				String full_string = getFullString(unedited_string, var_name, max_abs_error);
 				
-				//System.out.println("full str: \n " + full_string);
+				System.out.println("full str: \n " + full_string);
 				
 				PrintWriter writer = new PrintWriter("Test.java", "UTF-8");
 				writer.println(full_string);
@@ -356,17 +360,36 @@ public class JavaParserTester {
 		// Adds the other comment (final comment) + Prints the variable !
 		private static String getFullString(String unedited_string, String var_name, int max_abs_error) {
 			List<Comment> orphans = cu.getAllContainedComments();
-			Comment orphan = orphans.get(0);
+			
+			Comment orphan=null;
+			
+			for(int i=0; i < orphans.size();i++){
+				if(orphans.get(i).getContent().contains("@pragma tuner end"))
+					orphan = orphans.get(i);
+			}
+			
+			
+			
 			String[] unedited_split = unedited_string.split("\n");
+			
 			int line_nr = orphan.getEndLine();
+			
+			String[] test = cu.toStringWithoutComments().split("\n");
+			
 			String[] appended_split = new String[unedited_split.length + 2];
-			for (int z = 0; z < unedited_split.length + 2; z++) {
-				if (z == line_nr)
+			
+			line_nr=1+line_nr-(cu.getEndLine()-unedited_split.length-(unedited_split.length-test.length));
+			
+			for (int z = 0; z < unedited_split.length + 2 ; z++) {
+				if (z == line_nr-1)
 					appended_split[z] = "//" + orphan.getContent();
-				else if (z == line_nr+1)
+				else if (z == line_nr)
 					appended_split[z] = "System.out.println(\"420691337:\" + " + var_name + " );";
-				else if (z >= line_nr + 2)
+				else if (z >= line_nr + 1)
 					appended_split[z] = unedited_split[z - 2];
+				else if(z>unedited_split.length-1){
+					appended_split[z] = unedited_split[z- (unedited_split.length-test.length)];
+				}
 				else
 					appended_split[z] = unedited_split[z];
 			} 

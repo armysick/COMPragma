@@ -1,6 +1,25 @@
 public class Test {
 
+	//lalalalal
+	
     public static void main(String[] args) {
+    	
+    	//uhuhuhuhuhu
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
 		int acc = 2;
 		int STEP = 0;
         //@pragma tuner explore STEP(1, 10) reference(STEP=1)
@@ -9,9 +28,7 @@ public class Test {
 				acc += STEP;
 			}
 		}
-		//@pragma tuner max_abs_error acc 5
-		
-		int a = acc;
+		//@pragma tuner end max_abs_error acc 5
 		
     }
 }

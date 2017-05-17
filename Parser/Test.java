@@ -1,24 +1,6 @@
 public class Test {
-
-	//lalalalal
 	
     public static void main(String[] args) {
-    	
-    	//uhuhuhuhuhu
-    	
-    	
-    	
-    	
-    	
-    	
-    	
-    	
-    	
-    	
-    	
-    	
-    	
-    	
     	
 		int acc = 2;
 		int STEP = 0;
@@ -29,7 +11,6 @@ public class Test {
 			}
 		}
 		//@pragma tuner end max_abs_error acc 5
-		
     }
 }
 

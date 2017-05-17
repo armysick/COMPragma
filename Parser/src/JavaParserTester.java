@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.github.javaparser.JavaParser;
@@ -299,8 +300,6 @@ public class JavaParserTester {
 				
 				String full_string = getFullString(unedited_string, var_name, max_abs_error);
 				
-				System.out.println("full str: \n " + full_string);
-				
 				PrintWriter writer = new PrintWriter("Test.java", "UTF-8");
 				writer.println(full_string);
 				writer.close();
@@ -377,8 +376,11 @@ public class JavaParserTester {
 			String[] test = cu.toStringWithoutComments().split("\n");
 			
 			String[] appended_split = new String[unedited_split.length + 2];
-			
+
 			line_nr=1+line_nr-(cu.getEndLine()-unedited_split.length-(unedited_split.length-test.length));
+			//System.out.println(unedited_string);
+			//System.out.println(cu.toStringWithoutComments());
+			//System.out.println("yolo " + line_nr + " " + cu.getEndLine() + " " + unedited_split.length + " " + test.length);
 			
 			for (int z = 0; z < unedited_split.length + 2 ; z++) {
 				if (z == line_nr-1)

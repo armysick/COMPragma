@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
@@ -60,6 +61,9 @@ public class JavaParserTester {
 	private static List<SimpleEntry<Double,Double>> results = new ArrayList<SimpleEntry<Double,Double>>();
 	private static double currentNo;
 	private static long timeBegin, timeEnd;
+	
+	private static long[][] results_array;
+	private static int aux_index = 0;
 	
 	public static void main(String[] args) {
 		try {
@@ -193,6 +197,10 @@ public class JavaParserTester {
 
 			int min = Integer.parseInt(parsingString[3].split("\\(")[1].split(",")[0]);
 			int max = Integer.parseInt(parsingString[4].split("\\)")[0]);
+			
+			aux_index = 0;
+			results_array = new long[(max-min)+1][10];
+			
 			for (currentNo = min; currentNo <= max; currentNo++) {
 				try {
 					initializeVariable(n);
@@ -201,6 +209,7 @@ public class JavaParserTester {
 				}			
 				writeToOutputFiles(var_name, max_abs_error);
 				runCreatedFile();
+				aux_index++;
 			}
 			System.out.println("Done!");
 		}
@@ -319,8 +328,14 @@ public class JavaParserTester {
 				// Process execute = Runtime.getRuntime().exec("java
 				// pragmaf"+(file_num-1));
 				// runProcess("javac pragmaf"+(file_num-1)+".java");
-				runProcess("javac Test.java", false);
-				runProcess("java Test", true);
+				runProcess("C:\\Program Files (x86)\\Java\\jdk1.8.0_101\\bin\\javac Test.java", false);
+				long res;
+				for(int u = 0; u < 10; u++){
+					res = runProcess("java Test", true);
+					ComputeToArray(res, u);
+				}
+				ComputeOnArray();
+				
 			} catch (Exception e) {
 				System.out.println(
 						"Error on running generated test files! Please make sure you have javac and java installed and has a valid path!");
@@ -328,17 +343,18 @@ public class JavaParserTester {
 		}
 
 		// http://stackoverflow.com/questions/4842684/how-to-compile-run-java-program-in-another-java-program
-		private static void runProcess(String command, boolean save_timing) throws Exception {
+		private static long runProcess(String command, boolean save_timing) throws Exception {
 			
 			timeBegin = System.currentTimeMillis();
 			Process pro = Runtime.getRuntime().exec(command);
-			printLines(command + " stdout:", pro.getInputStream());
-			printLines(command + " stderr:", pro.getErrorStream());
+			printLines(command + " stdout:", pro.getInputStream());  
+			printLines(command + " stderr:", pro.getErrorStream()); 
 			pro.waitFor();
 			timeEnd = System.currentTimeMillis();
 			if (save_timing)
 			System.out.println("diferença de tempo = " + (timeEnd-timeBegin));
 			System.out.println(command + " exitValue() " + pro.exitValue());
+			return (timeEnd-timeBegin);
 		}
 
 		// http://stackoverflow.com/questions/4842684/how-to-compile-run-java-program-in-another-java-program
@@ -408,6 +424,22 @@ public class JavaParserTester {
 			   strBuilder.append("\n");
 			}
 			return strBuilder.toString();
+			
+		}
+		
+		private static void ComputeToArray(long res, int index){
+			results_array[aux_index][index] = res;
+		}
+		
+		private static void ComputeOnArray(){
+			Arrays.sort(results_array[aux_index]);	
+			
+			long soma = 0;
+			for(int x = 2; x < 8 ; x++)
+				soma += results_array[aux_index][x];
+		
+			results_array[aux_index][0] = (soma/6);
+			System.out.println("STEP " + (aux_index + 1) + ": " + results_array[aux_index][0]);
 			
 		}
 

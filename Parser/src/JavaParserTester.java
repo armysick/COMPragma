@@ -63,6 +63,7 @@ public class JavaParserTester {
 	private static long timeBegin, timeEnd;
 	
 	private static long[][] results_array;
+	private static ArrayList<Result> final_results_array = new ArrayList<Result>();
 	private static int aux_index = 0;
 	
 	public static void main(String[] args) {
@@ -112,7 +113,7 @@ public class JavaParserTester {
 			e1.printStackTrace();
 		}
 		
-		for(SimpleEntry p:results){
+		/*for(SimpleEntry p:results){
 			
 			try {
 				Files.write(file, (p.getKey()+ "||" + p.getValue()+" __ ").getBytes(), StandardOpenOption.APPEND);
@@ -121,6 +122,16 @@ public class JavaParserTester {
 				e.printStackTrace();
 			}
 			System.out.println(p.getKey()+ " " + p.getValue());
+		}*/
+		
+		for(Result r : final_results_array){
+			r.PrintResult();
+			try {
+				Files.write(file, (r.getSTEP()+ "||" + r.getAcc()+" __ " + r.getTimeElapsed()+" -- \n").getBytes(), StandardOpenOption.APPEND);
+			} catch (IOException e) {
+				System.out.println("ERROR WRITING TO FILE");
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -323,11 +334,6 @@ public class JavaParserTester {
 		// Runs, one by one, the generated files on writeToOutputFiles()
 		private void runCreatedFile() {
 			try {
-				// Process compile = Runtime.getRuntime().exec("javac
-				// pragmaf"+(file_num-1)+".java");
-				// Process execute = Runtime.getRuntime().exec("java
-				// pragmaf"+(file_num-1));
-				// runProcess("javac pragmaf"+(file_num-1)+".java");
 				runProcess("C:\\Program Files (x86)\\Java\\jdk1.8.0_101\\bin\\javac Test.java", false);
 				long res;
 				for(int u = 0; u < 10; u++){
@@ -365,6 +371,7 @@ public class JavaParserTester {
 				System.out.println(line);
 				if(line.split(":")[0].equals("420691337")){
 					results.add(new SimpleEntry<Double,Double>(currentNo,Double.parseDouble(line.split(":")[1])));
+					final_results_array.add(new Result(currentNo, Double.parseDouble(line.split(":")[1])));
 					
 				}
 					
@@ -440,7 +447,23 @@ public class JavaParserTester {
 		
 			results_array[aux_index][0] = (soma/6);
 			System.out.println("STEP " + (aux_index + 1) + ": " + results_array[aux_index][0]);
+			ProcessFinalArray();
+			final_results_array.get(aux_index).addTime(results_array[aux_index][0]);
 			
+			
+		}
+		
+		public static void ProcessFinalArray(){
+			int ten_counter = 0;
+			for(int i = aux_index ; i < final_results_array.size();i++){
+				if(ten_counter != 0){
+					final_results_array.remove(i);
+					i--;
+				}
+				if(ten_counter == 9)
+					ten_counter = 0;
+				ten_counter++;
+			}
 		}
 
 	}

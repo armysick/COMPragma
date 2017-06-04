@@ -61,6 +61,7 @@ public class JavaParserTester {
 	private static List<SimpleEntry<Double,Double>> results = new ArrayList<SimpleEntry<Double,Double>>();
 	private static double currentNo;
 	private static long timeBegin, timeEnd;
+	private static String initialCommand;
 	
 	private static long[][] results_array;
 	private static ArrayList<Result> final_results_array = new ArrayList<Result>();
@@ -170,18 +171,28 @@ public class JavaParserTester {
 						else command =  parsingString[3].toUpperCase();
 						
 						startLine = n.getBody().getAllContainedComments().get(i).getBeginLine();
+						double reference;
+						
 						switch (command) {
 
 						case "EXPLORE":
 							
-							double reference = Double.parseDouble(parsingString[5].split("=")[1].substring(0, parsingString[5].split("=")[1].length()-1));
+							initialCommand = command;
+							reference = Double.parseDouble(parsingString[5].split("=")[1].substring(0, parsingString[5].split("=")[1].length()-1));
 							System.out.println("REFERENCIA: "+ reference);
 							explore(n, var_name, max_abs_error);
 							var_name = null; // Set to null, so it doesn't
 												// "carry over"
 												// to the next explore.
 							break;
-
+						case "STEEPDESC" :
+							
+							initialCommand = command;
+							reference = Double.parseDouble(parsingString[5].split("=")[1].substring(0, parsingString[5].split("=")[1].length()-1));
+							System.out.println("REFERENCIA: "+ reference);
+							steepestDescent(n, var_name, max_abs_error);
+							var_name = null;
+							break;
 						case "MAX_ABS_ERROR":
 							var_name = parsingString[4];
 							max_abs_error = Integer.parseInt(parsingString[5]);
@@ -198,6 +209,90 @@ public class JavaParserTester {
 
 			}
 
+		}
+		
+		private void steepestDescent(MethodDeclaration n, String var_name, int max_abs_error) {
+			if (var_name == null || max_abs_error == -420691337) {
+				System.out.println("No end Pragma condition was given! :( ");
+				return;
+			}
+
+			int min = Integer.parseInt(parsingString[3].split("\\(")[1].split(",")[0]);
+			int max = Integer.parseInt(parsingString[4].split("\\)")[0]);
+			
+			aux_index = 0;
+			results_array = new long[(max-min)+1][10];
+			currentNo = Math.ceil((max-min)/2);
+			try {
+				initializeVariable(n);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			writeToOutputFiles(var_name, max_abs_error);
+			runCreatedFile();
+			currentNo = Math.ceil((max-min)/2)+1;
+			aux_index++;
+			try {
+				initializeVariable(n);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			writeToOutputFiles(var_name, max_abs_error);
+			runCreatedFile();
+			
+			String orientation="";
+			
+			if(final_results_array.get(0).getTimeElapsed()<final_results_array.get(1).getTimeElapsed()){
+				orientation="down";
+				currentNo--;
+				currentNo--;
+			}else{
+				orientation="up";
+				currentNo++;
+			}
+			boolean stop=true;
+			while(stop){
+				
+				System.out.println(final_results_array.size() + "LA PA PUTA Q T PARIU " + currentNo);
+				if(final_results_array.size()>3 && final_results_array.get(final_results_array.size()-1).getTimeElapsed()<final_results_array.get(final_results_array.size()-2).getTimeElapsed() && final_results_array.get(final_results_array.size()-1).getAcc()<max_abs_error){
+					if(orientation.equals("up"))
+						currentNo++;
+					else currentNo--;
+				}else if(final_results_array.size()>3){
+					break;
+				}else if(final_results_array.size()==3){
+					if(orientation.equals("up")){
+						if(final_results_array.get(2).getTimeElapsed()<final_results_array.get(1).getTimeElapsed() && final_results_array.get(2).getAcc()<max_abs_error){
+							currentNo++;
+						}else break;
+					}else{
+						System.out.println("ALOOOOOOOOOOOOOOOOO " + final_results_array.get(2).getTimeElapsed() + " " + final_results_array.get(0).getTimeElapsed() + " " + final_results_array.get(2).getAcc() + " " + max_abs_error);
+						if(final_results_array.get(2).getTimeElapsed()<final_results_array.get(0).getTimeElapsed() && final_results_array.get(2).getAcc()<max_abs_error){
+							currentNo--;
+						}else break;
+					}
+				}else if(final_results_array.size()>2) break;
+				
+				System.out.println(final_results_array.size() + "LA PA PUTA Q T PARIU " + currentNo);
+				
+				try {
+					initializeVariable(n);
+				} catch (Exception e) {
+					return;
+				}
+				aux_index++;
+				writeToOutputFiles(var_name, max_abs_error);
+				runCreatedFile();
+				
+				if(currentNo==min || currentNo==max)
+					break;
+				
+				
+				
+			}
+			System.out.println("Done!");
 		}
 
 		private void explore(MethodDeclaration n, String var_name, int max_abs_error) {
@@ -227,7 +322,8 @@ public class JavaParserTester {
 		
 		private String getVariableType(List<Statement> list, String variableName){
 			for(int i = 0; i < list.size(); i++){
-				if(list.get(i).getChildrenNodes().get(0).getChildrenNodes().get(1).toString().equals(variableName)){
+				if(list.get(i).getChildrenNodes().get(0).getChildrenNodes().get(1).toString().split(" ")[0].equals(variableName)){
+					
 					String type = list.get(i).getChildrenNodes().get(0).getChildrenNodes().get(0).toString();
 					if(type.equals("int")||type.equals("double")||type.equals("float")){
 						return type;
@@ -260,14 +356,13 @@ public class JavaParserTester {
 			Expression exprAdded = null;
 			list = n.getBody().getStmts();
 			String type = getVariableType(list,parsingString[3].split("\\(")[0]);
-			
 			if(type.equals("erro")){
 				//caso nao seja um tipo válido
 				System.out.println("Wrong type of variable declared in pragma. Only int/double/float are allowed!");
 				Exception e = new Exception();
 				throw e;
 			}else if(!type.equals("")){
-				//caseo ja esteja inicializado
+				//caso ja esteja inicializado
 				Expression initialized = initializeExpression(type);
 				exprAdded = new AssignExpr(new NameExpr(parsingString[3].split("\\(")[0]),initialized,Operator.assign);
 			}else{
@@ -295,9 +390,10 @@ public class JavaParserTester {
 					break;
 				}
 
-				if (list.get(i).toString()
+				if ((list.get(i).toString()
 						.contains(parsingString[3].split("\\(")[0] + " = " + format.format(currentNo - 1) + ";") || list.get(i).toString()
-						.contains(parsingString[3].split("\\(")[0] + " = " + (currentNo - 1) + ";")) {
+						.contains(parsingString[3].split("\\(")[0] + " = " + (currentNo - 1) + ";") )&& currentNo!=1) {
+					
 					list.remove(i);
 					list.add(i, asserts);
 					break;
@@ -334,7 +430,7 @@ public class JavaParserTester {
 		// Runs, one by one, the generated files on writeToOutputFiles()
 		private void runCreatedFile() {
 			try {
-				runProcess("C:\\Program Files (x86)\\Java\\jdk1.8.0_101\\bin\\javac Test.java", false);
+				runProcess("javac Test.java", false);
 				long res;
 				for(int u = 0; u < 10; u++){
 					res = runProcess("java Test", true);
@@ -401,9 +497,6 @@ public class JavaParserTester {
 			String[] appended_split = new String[unedited_split.length + 2];
 
 			line_nr=1+line_nr-(cu.getEndLine()-unedited_split.length-(unedited_split.length-test.length));
-			//System.out.println(unedited_string);
-			//System.out.println(cu.toStringWithoutComments());
-			//System.out.println("yolo " + line_nr + " " + cu.getEndLine() + " " + unedited_split.length + " " + test.length);
 			
 			for (int z = 0; z < unedited_split.length + 2 ; z++) {
 				if (z == line_nr-1)
@@ -448,6 +541,7 @@ public class JavaParserTester {
 			results_array[aux_index][0] = (soma/6);
 			System.out.println("STEP " + (aux_index + 1) + ": " + results_array[aux_index][0]);
 			ProcessFinalArray();
+			
 			final_results_array.get(aux_index).addTime(results_array[aux_index][0]);
 			
 			

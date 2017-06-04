@@ -267,7 +267,6 @@ public class JavaParserTester {
 							currentNo++;
 						}else break;
 					}else{
-						System.out.println("ALOOOOOOOOOOOOOOOOO " + final_results_array.get(2).getTimeElapsed() + " " + final_results_array.get(0).getTimeElapsed() + " " + final_results_array.get(2).getAcc() + " " + max_abs_error);
 						if(final_results_array.get(2).getTimeElapsed()<final_results_array.get(0).getTimeElapsed() && final_results_array.get(2).getAcc()<max_abs_error){
 							currentNo--;
 						}else break;
@@ -285,8 +284,6 @@ public class JavaParserTester {
 				
 				if(currentNo==min || currentNo==max)
 					break;
-				
-				
 				
 			}
 			System.out.println("Done!");

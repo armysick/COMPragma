@@ -255,7 +255,6 @@ public class JavaParserTester {
 			boolean stop=true;
 			while(stop){
 				
-				System.out.println(final_results_array.size() + "LA PA PUTA Q T PARIU " + currentNo);
 				if(final_results_array.size()>3 && final_results_array.get(final_results_array.size()-1).getTimeElapsed()<final_results_array.get(final_results_array.size()-2).getTimeElapsed() && final_results_array.get(final_results_array.size()-1).getAcc()<max_abs_error){
 					if(orientation.equals("up"))
 						currentNo++;
@@ -274,8 +273,6 @@ public class JavaParserTester {
 						}else break;
 					}
 				}else if(final_results_array.size()>2) break;
-				
-				System.out.println(final_results_array.size() + "LA PA PUTA Q T PARIU " + currentNo);
 				
 				try {
 					initializeVariable(n);

@@ -90,7 +90,7 @@ public class JavaParserTester {
 				System.out.println("//@pragma tuner end max_abs_error acc 5");
 				System.out.println("This one deems as valid any iteration for any value of STEP, assuming acc does not deviate more than 5 from the value it had on the reference STEP iteration.");
 				System.out.println("\n The other end pragma allows an int-format flag(value 0 or 1) to be tested. Thus, allowing values of STEP where the flag ends as either 0 or 1. Usage example:");
-				System.out.println("//@pragma tuner end flag acc 0\nNote: this feature is NOT available for Steepest Descent mode. \n");
+				System.out.println("//@pragma tuner end flag acc 0\n");
 				System.out.println("\n\nIMPORTANT: this must be done in a file named Test.java in this same directory.");
 				System.exit(0);
 			}

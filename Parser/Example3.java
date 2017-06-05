@@ -6,8 +6,11 @@ public class Example3{
 		int STEP = 0;
 		int flaggerina = 0;
         //@pragma tuner steepdesc STEP(1, 10) reference(STEP=5)
-		for(int x = 0 ; x < 100 ; x++){
-			acc +=2;
+		for(int x = 0 ; x < 10*STEP ; x++){
+			if(Math.random() < 0.5)
+				acc +=2;
+			else
+				acc+=1;
 		}
 		
 		if(acc%2 == 0){

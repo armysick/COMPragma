@@ -63,6 +63,7 @@ public class JavaParserTester {
 	private static long timeBegin, timeEnd;
 	private static String initialCommand;
 	private static int max_abs_error;
+	private static int flag;
 	private static String secondaryAction = "none";
 	private static double reference;
 	private static long[][] results_array;
@@ -140,8 +141,24 @@ public class JavaParserTester {
 		{
 			calculateError(max_abs_error,reference);
 		}
+		
+		if(secondaryAction.equals("FLAG"))
+		{
+			calculateErrorFlag(flag);
+		}
 	}
 
+	private static void calculateErrorFlag(int flaggerino) {
+		Flag flaghandler = new Flag();
+		try {
+			flaghandler.parseFile();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		flaghandler.calculateError(max_abs_error, reference);
+		
+	}
+	
 	private static void calculateError(int max_abs_error2, double reference2) {
 		ResultAbsError handler = new ResultAbsError();
 		try {
@@ -162,6 +179,7 @@ public class JavaParserTester {
 		public void visit(MethodDeclaration n, Void arg) {
 			String var_name = null; // Variable to compare [acc in our example]
 			 max_abs_error = -420691337; // maximum absolute error!
+			 flag = -1;
 			if (n.getName().equals("main")) {
 
 				// This here actually searches from bottom up, which lets us
@@ -216,6 +234,13 @@ public class JavaParserTester {
 							System.out.println("\nmax_abs_error:\n var_name received: " + var_name
 									+ "\n max_err_received: " + max_abs_error);
 							secondaryAction = "MAX_ABS_ERROR";
+							break;
+						case "FLAG":
+							var_name = parsingString[4];
+							flag = Integer.parseInt(parsingString[5]);
+							System.out.println("\nflag:\n var_name received: " + var_name
+									+ "\n flag: " + flag);
+							secondaryAction = "FLAG";
 							break;
 						default:
 							System.out.println("Command " + command + " not supported.");

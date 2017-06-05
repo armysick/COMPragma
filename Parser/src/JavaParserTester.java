@@ -74,7 +74,7 @@ public class JavaParserTester {
 		try {
 
 			if(args.length == 0){
-				System.out.println("Insert argument <run> to run \nUse <help> for more running information\nUse <faq> for most frequent problems and tips");
+				System.out.println("Insert argument <run> <outputfile>.txt to run \nUse <help> for more running information\nUse <faq> for most frequent problems and tips");
 				System.exit(0);
 			}
 			

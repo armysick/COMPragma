@@ -33,32 +33,35 @@ public class ResultAbsError {
 	{
 		float ref = (float)reference;
 		ArrayList<Float> inside = new ArrayList<Float>();//guarda valores que estao dentro do erro.
-		System.out.println("Size "+ steps.size() +" Reference "+ steps.indexOf(ref));
 		float accReference = accs.get(steps.indexOf(ref));
 		for(int i=0; i<steps.size();i++)
 		{
-			if(accs.get(i)-accReference<max_abs_error)
+			if(Math.abs(accs.get(i)-accReference)<max_abs_error)
 			{
 				inside.add(steps.get(i));
 			}
 		}
 		if(inside.size()==0)
 		{
-			System.out.println("No step matched the requirements");
+			System.out.println("No one matched the requirements");
 		}
 		else
 		{
 			float bestStep = inside.get(0);
 			int bestStepTime = times.get(steps.indexOf(inside.get(0)));
+			float bestAcc = accs.get(steps.indexOf(inside.get(0)));
+			System.out.println("The valid are:");
 			for (int i=0;i<inside.size();i++)
 			{
 				if(times.get(steps.indexOf(inside.get(i)))<bestStepTime)
 				{
 					bestStep = inside.get(i);
 					bestStepTime = times.get(steps.indexOf(inside.get(i)));
+					bestAcc = accs.get(steps.indexOf(inside.get(i)));
 				}
+				System.out.println(inside.get(i)+", a value of: " + accs.get(steps.indexOf(inside.get(i))) +" and with a time of "+times.get(steps.indexOf(inside.get(i)))+" ms");
 			}
-			System.out.println("The best one is STEP = "  +bestStep + " ,with a time of " +bestStepTime +" ms.");
+			System.out.println("\nTHE BEST ONE IS: "  +bestStep + ", a value of: " + bestAcc + " and with a time of " +bestStepTime +" ms.");
 		}
 	}
 }

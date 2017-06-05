@@ -155,7 +155,7 @@ public class JavaParserTester {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		flaghandler.calculateError(max_abs_error, reference);
+		flaghandler.calculateError(flag);
 		
 	}
 	
@@ -335,7 +335,7 @@ public class JavaParserTester {
 		}
 
 		private void explore(MethodDeclaration n, String var_name, int max_abs_error) {
-			if (var_name == null || max_abs_error == -420691337) {
+			if (var_name == null || (max_abs_error == -420691337 && flag == -1)) {
 				System.out.println("No end Pragma condition was given! :( ");
 				return;
 			}
@@ -352,7 +352,10 @@ public class JavaParserTester {
 				} catch (Exception e) {
 					return;
 				}			
-				writeToOutputFiles(var_name, max_abs_error);
+				if(flag == -1)
+					writeToOutputFiles(var_name, max_abs_error);
+				else
+					writeToOutputFiles(var_name, flag);
 				runCreatedFile();
 				aux_index++;
 			}

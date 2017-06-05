@@ -29,15 +29,13 @@ public class Flag {
 		in.close();
 	}
 	
-	public void calculateError(int max_abs_error, double reference)
+	public void calculateError(int flag)
 	{
-		float ref = (float)reference;
-		ArrayList<Float> inside = new ArrayList<Float>();//guarda valores que estao dentro do erro.
-		System.out.println("Size "+ steps.size() +" Reference "+ steps.indexOf(ref));
-		float accReference = accs.get(steps.indexOf(ref));
+		ArrayList<Float> inside = new ArrayList<Float>();//guarda valores com flag a 1.
+		System.out.println("Size "+ steps.size());
 		for(int i=0; i<steps.size();i++)
 		{
-			if(accs.get(i)-accReference<max_abs_error)
+			if(accs.get(i)==flag)
 			{
 				inside.add(steps.get(i));
 			}

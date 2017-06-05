@@ -286,7 +286,7 @@ public class JavaParserTester {
 		
 		
 		private void steepestDescent(MethodDeclaration n, String var_name, int max_abs_error) {
-			if (var_name == null || max_abs_error == -420691337) {
+			if (var_name == null || (max_abs_error == -420691337 && flag == -1)) {
 				System.out.println("No end Pragma condition was given! :( ");
 				return;
 			}
@@ -303,7 +303,11 @@ public class JavaParserTester {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			writeToOutputFiles(var_name, max_abs_error);
+			if(flag == -1)
+				writeToOutputFiles(var_name, max_abs_error);
+			else{
+				writeToOutputFiles(var_name, flag);
+			}
 			runCreatedFile();
 			currentNo = Math.ceil((max-min)/2)+1;
 			aux_index++;
@@ -313,9 +317,12 @@ public class JavaParserTester {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			writeToOutputFiles(var_name, max_abs_error);
-			runCreatedFile();
 			
+			if(flag == -1)
+				writeToOutputFiles(var_name, max_abs_error);
+			else
+				writeToOutputFiles(var_name, flag);
+			runCreatedFile();
 			String orientation="";
 			
 			if(final_results_array.get(0).getTimeElapsed()<final_results_array.get(1).getTimeElapsed()){
@@ -329,7 +336,7 @@ public class JavaParserTester {
 			boolean stop=true;
 			while(stop){
 				
-				if(final_results_array.size()>3 && final_results_array.get(final_results_array.size()-1).getTimeElapsed()<final_results_array.get(final_results_array.size()-2).getTimeElapsed() && final_results_array.get(final_results_array.size()-1).getAcc()<max_abs_error){
+				if(final_results_array.size()>3 && final_results_array.get(final_results_array.size()-1).getTimeElapsed()<final_results_array.get(final_results_array.size()-2).getTimeElapsed() && ((max_abs_error != -420691337 && final_results_array.get(final_results_array.size()-1).getAcc()<max_abs_error)|| (flag != -1 && final_results_array.get(final_results_array.size()-1).getAcc() == flag))){
 					if(orientation.equals("up"))
 						currentNo++;
 					else currentNo--;
@@ -337,11 +344,11 @@ public class JavaParserTester {
 					break;
 				}else if(final_results_array.size()==3){
 					if(orientation.equals("up")){
-						if(final_results_array.get(2).getTimeElapsed()<final_results_array.get(1).getTimeElapsed() && final_results_array.get(2).getAcc()<max_abs_error){
+						if(final_results_array.get(2).getTimeElapsed()<final_results_array.get(1).getTimeElapsed() && ((max_abs_error != -420691337 && final_results_array.get(2).getAcc()<max_abs_error)|| (flag != -1 && final_results_array.get(2).getAcc()==flag))){
 							currentNo++;
 						}else break;
 					}else{
-						if(final_results_array.get(2).getTimeElapsed()<final_results_array.get(0).getTimeElapsed() && final_results_array.get(2).getAcc()<max_abs_error){
+						if(final_results_array.get(2).getTimeElapsed()<final_results_array.get(0).getTimeElapsed() && ((max_abs_error != -420691337 && final_results_array.get(2).getAcc()<max_abs_error)|| (flag != -1 && final_results_array.get(2).getAcc()==flag))){
 							currentNo--;
 						}else break;
 					}
@@ -353,7 +360,10 @@ public class JavaParserTester {
 					return;
 				}
 				aux_index++;
-				writeToOutputFiles(var_name, max_abs_error);
+				if(flag == -1)
+					writeToOutputFiles(var_name, max_abs_error);
+				else
+					writeToOutputFiles(var_name, flag);
 				runCreatedFile();
 				
 				if(currentNo==min || currentNo==max)
@@ -504,6 +514,7 @@ public class JavaParserTester {
 				runProcess("javac "+inputfile, false);
 				long res;
 				for(int u = 0; u < 10; u++){
+					System.out.println("iteration " + u);
 					res = runProcess("java "+inputfile.split("\\.")[0], true);
 					ComputeToArray(res, u);
 				}
@@ -512,6 +523,7 @@ public class JavaParserTester {
 			} catch (Exception e) {
 				System.out.println(
 						"Error on running generated test files! Please make sure you have javac and java installed and has a valid path!");
+				e.printStackTrace();
 			}
 		}
 
@@ -520,6 +532,7 @@ public class JavaParserTester {
 			
 			timeBegin = System.currentTimeMillis();
 			Process pro = Runtime.getRuntime().exec(command);
+			
 			printLines(command + " stdout:", pro.getInputStream());  
 			printLines(command + " stderr:", pro.getErrorStream()); 
 			pro.waitFor();

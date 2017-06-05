@@ -62,7 +62,9 @@ public class JavaParserTester {
 	private static double currentNo;
 	private static long timeBegin, timeEnd;
 	private static String initialCommand;
-	
+	private static int max_abs_error;
+	private static String secondaryAction = "none";
+	private static double reference;
 	private static long[][] results_array;
 	private static ArrayList<Result> final_results_array = new ArrayList<Result>();
 	private static int aux_index = 0;
@@ -128,12 +130,27 @@ public class JavaParserTester {
 		for(Result r : final_results_array){
 			r.PrintResult();
 			try {
-				Files.write(file, (r.getSTEP()+ "||" + r.getAcc()+" __ " + r.getTimeElapsed()+" -- \n").getBytes(), StandardOpenOption.APPEND);
+				Files.write(file, (r.getSTEP()+ ";;" + r.getAcc()+"__" + r.getTimeElapsed()+"\n").getBytes(), StandardOpenOption.APPEND);
 			} catch (IOException e) {
 				System.out.println("ERROR WRITING TO FILE");
 				e.printStackTrace();
 			}
 		}
+		if(secondaryAction.equals("MAX_ABS_ERROR"))
+		{
+			calculateError(max_abs_error,reference);
+		}
+	}
+
+	private static void calculateError(int max_abs_error2, double reference2) {
+		ResultAbsError handler = new ResultAbsError();
+		try {
+			handler.parseFile();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		handler.calculateError(max_abs_error, reference);
+		
 	}
 
 	/**
@@ -144,7 +161,7 @@ public class JavaParserTester {
 		@Override
 		public void visit(MethodDeclaration n, Void arg) {
 			String var_name = null; // Variable to compare [acc in our example]
-			int max_abs_error = -420691337; // maximum absolute error!
+			 max_abs_error = -420691337; // maximum absolute error!
 			if (n.getName().equals("main")) {
 
 				// This here actually searches from bottom up, which lets us
@@ -171,7 +188,7 @@ public class JavaParserTester {
 						else command =  parsingString[3].toUpperCase();
 						
 						startLine = n.getBody().getAllContainedComments().get(i).getBeginLine();
-						double reference;
+						
 						
 						switch (command) {
 
@@ -198,6 +215,7 @@ public class JavaParserTester {
 							max_abs_error = Integer.parseInt(parsingString[5]);
 							System.out.println("\nmax_abs_error:\n var_name received: " + var_name
 									+ "\n max_err_received: " + max_abs_error);
+							secondaryAction = "MAX_ABS_ERROR";
 							break;
 						default:
 							System.out.println("Command " + command + " not supported.");
@@ -208,8 +226,10 @@ public class JavaParserTester {
 				}
 
 			}
-
+			
 		}
+		
+		
 		
 		private void steepestDescent(MethodDeclaration n, String var_name, int max_abs_error) {
 			if (var_name == null || max_abs_error == -420691337) {

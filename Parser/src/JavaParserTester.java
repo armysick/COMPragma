@@ -103,6 +103,10 @@ public class JavaParserTester {
 				System.out.println("Please specify results output file!");
 				System.exit(0);
 			}
+			else if(!(args[0].equals("run") && args.length == 2)){
+				System.out.println("Invalid arguments!");
+				System.exit(0);
+			}
 			// Rename it so you don't have to create differently named classes
 			// to run again.
 			// In the end of the execution it shall be reset to the original

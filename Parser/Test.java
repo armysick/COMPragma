@@ -18,4 +18,3 @@ public class Test {
 		//@pragma tuner end max_abs_error acc 5
     }
 }
-

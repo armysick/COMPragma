@@ -1,4 +1,4 @@
-public class Test {
+public class Example {
 	
     public static void main(String[] args) {
     	
@@ -18,3 +18,4 @@ public class Test {
 		//@pragma tuner end max_abs_error acc 5
     }
 }
+

@@ -64,6 +64,7 @@ public class JavaParserTester {
 	private static String initialCommand;
 	private static int max_abs_error;
 	private static int flag;
+	private static String inputfile;
 	private static String secondaryAction = "none";
 	private static double reference;
 	private static long[][] results_array;
@@ -74,7 +75,7 @@ public class JavaParserTester {
 		try {
 
 			if(args.length == 0){
-				System.out.println("Insert argument <run> <outputfile>.txt to run \nUse <help> for more running information\nUse <faq> for most frequent problems and tips");
+				System.out.println("Insert argument <run> <outputfile>.txt <inputfile>.java to run \nUse <help> for more running information\nUse <faq> for most frequent problems and tips");
 				System.exit(0);
 			}
 			
@@ -97,24 +98,27 @@ public class JavaParserTester {
 				System.out.println("\n\nPragma condition not given? --  Check if the pragma comment [//@pragma(...)] is on the exact next or previous line of a statement or a token.\n");
 				System.out.println("File exception error? --------  If you have a Test2.java file in this folder, rename it to Test.java after deleting the previously existing Test.java file\n");
 				System.out.println("Can't find a variable? -------  Check if you have declared AND initialized with a default value the variable you specified on the pragma.\n");
+				System.out.println("\'}\' or \';\' expected? -----------  Try to open and close if and for statements (etc..) with {} instead of using the abbreviated version.\n");
 				System.exit(0);
 			}
-			else if(args[0].equals("run") && args.length != 2){
-				System.out.println("Please specify results output file!");
+			else if(args[0].equals("run") && args.length != 3){
+				System.out.println("Please specify results output and/or input files!");
 				System.exit(0);
 			}
-			else if(!(args[0].equals("run") && args.length == 2)){
+			else if(!(args[0].equals("run") && args.length == 3)){
 				System.out.println("Invalid arguments!");
 				System.exit(0);
 			}
+			
+			inputfile = args[2];
 			// Rename it so you don't have to create differently named classes
 			// to run again.
 			// In the end of the execution it shall be reset to the original
-			Path ogpath = Paths.get("Test.java");
-			Files.move(ogpath, ogpath.resolveSibling("Test2.java"));
+			Path ogpath = Paths.get(inputfile);
+			Files.move(ogpath, ogpath.resolveSibling(inputfile + "2"));
 
 			// creates an input stream for the file to be parsed
-			FileInputStream in = new FileInputStream("Test2.java");
+			FileInputStream in = new FileInputStream(inputfile+"2");
 			// parse the file
 			cu = JavaParser.parse(in);
 			// visit and change the methods names and parameters
@@ -125,11 +129,11 @@ public class JavaParserTester {
 			try {
 				// Rename original file to original name, replacing intermediate
 				// generated files
-				Path secondpath = Paths.get("Test2.java");
-				Files.move(secondpath, secondpath.resolveSibling("Test.java"), StandardCopyOption.REPLACE_EXISTING);
+				Path secondpath = Paths.get(inputfile+"2");
+				Files.move(secondpath, secondpath.resolveSibling(inputfile), StandardCopyOption.REPLACE_EXISTING);
 			} catch (Exception e) {
 				throw new RuntimeException(
-						"Error! File may have been renamed to <filename>2.java and not sucessfully renamed back!");
+						"Error! File may have been renamed to <filename>.java2 and not sucessfully renamed back!");
 			}
 
 		} catch (ParseException e) {
@@ -483,7 +487,7 @@ public class JavaParserTester {
 				
 				String full_string = getFullString(unedited_string, var_name, max_abs_error);
 				
-				PrintWriter writer = new PrintWriter("Test.java", "UTF-8");
+				PrintWriter writer = new PrintWriter(inputfile, "UTF-8");
 				writer.println(full_string);
 				writer.close();
 			} catch (IOException e) {
@@ -497,10 +501,10 @@ public class JavaParserTester {
 		// Runs, one by one, the generated files on writeToOutputFiles()
 		private void runCreatedFile() {
 			try {
-				runProcess("javac Test.java", false);
+				runProcess("javac "+inputfile, false);
 				long res;
 				for(int u = 0; u < 10; u++){
-					res = runProcess("java Test", true);
+					res = runProcess("java "+inputfile.split("\\.")[0], true);
 					ComputeToArray(res, u);
 				}
 				ComputeOnArray();

@@ -144,7 +144,7 @@ public class JavaParserTester {
 			throw new RuntimeException("Error changing file name\n", e);
 		}
 
-		FileOutputStream out;
+		FileOutputStream out = null;
 		Path file = null;
 		try {
 			out = new FileOutputStream("results.txt");
@@ -161,6 +161,7 @@ public class JavaParserTester {
 			r.PrintResult();
 			try {
 				Files.write(file, (r.getSTEP()+ ";;" + r.getAcc()+"__" + r.getTimeElapsed()+"\n").getBytes(), StandardOpenOption.APPEND);
+				
 			} catch (IOException e) {
 				System.out.println("ERROR WRITING TO FILE");
 				e.printStackTrace();
@@ -174,6 +175,25 @@ public class JavaParserTester {
 		if(secondaryAction.equals("FLAG"))
 		{
 			calculateErrorFlag(flag, args[1]);
+		}
+		try {
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		cleanFiles();
+	}
+	
+	private static void cleanFiles(){
+		File f1,f2;
+		try{
+			f1 = new File("results.txt");
+			f1.delete();
+			f2 = new File(inputfile.split("\\.")[0] + ".class");
+			f2.delete();
+		}
+		catch(Exception e){
+			
 		}
 	}
 

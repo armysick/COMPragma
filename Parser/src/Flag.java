@@ -1,5 +1,15 @@
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -29,10 +39,22 @@ public class Flag {
 		in.close();
 	}
 	
-	public void calculateError(int flag)
+	public void calculateError(int flag, String filename)
 	{
 		ArrayList<Float> inside = new ArrayList<Float>();//guarda valores com flag a 1.
 		System.out.println("Size "+ steps.size());
+		
+		
+		BufferedWriter bw = null;
+		try {
+			File fout = new File(filename);
+			FileOutputStream fos = new FileOutputStream(fout);
+		 
+			bw = new BufferedWriter(new OutputStreamWriter(fos));
+		} catch (IOException e2) {
+			e2.printStackTrace();
+		}
+		
 		for(int i=0; i<steps.size();i++)
 		{
 			if(accs.get(i)==flag)
@@ -55,8 +77,27 @@ public class Flag {
 					bestStep = inside.get(i);
 					bestStepTime = times.get(steps.indexOf(inside.get(i)));
 				}
+					
+					try {
+						//Files.write(file,(inside.get(i)+", a value of: " + accs.get(steps.indexOf(inside.get(i))) +" and with a time of "+times.get(steps.indexOf(inside.get(i)))+" ms" + "\n").getBytes(), StandardOpenOption.APPEND);
+						bw.write(inside.get(i)+", a value of: " + accs.get(steps.indexOf(inside.get(i))) +" and with a time of "+times.get(steps.indexOf(inside.get(i)))+" ms\r\n");
+						bw.newLine();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				
 			}
-			System.out.println("The best one is STEP = "  +bestStep + " ,with a time of " +bestStepTime +" ms.");
+			try {
+				//Files.write(file,("The best one is STEP = "  +bestStep + " ,with a time of " +bestStepTime +" ms.\n").getBytes(), StandardOpenOption.APPEND);
+				bw.write("The best one is STEP = "  +bestStep + " ,with a time of " +bestStepTime +" ms.\r\n");
+				bw.newLine();
+				bw.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			
+		
 		}
 	}
 }

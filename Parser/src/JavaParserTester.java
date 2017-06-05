@@ -73,6 +73,36 @@ public class JavaParserTester {
 	public static void main(String[] args) {
 		try {
 
+			if(args.length == 0){
+				System.out.println("Insert argument <run> to run \nUse <help> for more running information\nUse <faq> for most frequent problems and tips");
+				System.exit(0);
+			}
+			
+			if(args[0].equals("help")){
+				System.out.println("\n\nBefore the code snippet you want to test, you should insert your pragma tuner mode.\nCurrently two modes are available:\n");
+				System.out.println("Basic explore mode: explore a variable (named STEP on the results) in an integer range and give out a reference base value inside the range. Usage example:");
+				System.out.println("//@pragma tuner explore STEP(1, 2) reference(STEP=1)\n");
+				System.out.println("The other available mode is steepest descent search. The tuner will search for the next fastest value and search from there, starting on\nthe middle value of the range given. Usage example:\n");
+				System.out.println("//@pragma tuner steepdesc STEP(1, 10) reference(STEP=1)\n");
+				System.out.println("An end pragma condition must now be inserted after the code snippet.");
+				System.out.println("Currently, two modes are available. \"max_abs_error\" will limit the maximum absolute error of a variable (named ACC on the results), compared to the STEP's reference corresponding value. Usage example:\n");
+				System.out.println("//@pragma tuner end max_abs_error acc 5");
+				System.out.println("This one deems as valid any iteration for any value of STEP, assuming acc does not deviate more than 5 from the value it had on the reference STEP iteration.");
+				System.out.println("\n The other end pragma allows an int-format flag(value 0 or 1) to be tested. Thus, allowing values of STEP where the flag ends as either 0 or 1. Usage example:");
+				System.out.println("//@pragma tuner end flag acc 0\nNote: this feature is NOT available for Steepest Descent mode. \n");
+				System.out.println("\n\nIMPORTANT: this must be done in a file named Test.java in this same directory.");
+				System.exit(0);
+			}
+			else if(args[0].equals("faq")){
+				System.out.println("\n\nPragma condition not given? --  Check if the pragma comment [//@pragma(...)] is on the exact next or previous line of a statement or a token.\n");
+				System.out.println("File exception error? --------  If you have a Test2.java file in this folder, rename it to Test.java after deleting the previously existing Test.java file\n");
+				System.out.println("Can't find a variable? -------  Check if you have declared AND initialized with a default value the variable you specified on the pragma.\n");
+				System.exit(0);
+			}
+			else if(args[0].equals("run") && args.length != 2){
+				System.out.println("Please specify results output file!");
+				System.exit(0);
+			}
 			// Rename it so you don't have to create differently named classes
 			// to run again.
 			// In the end of the execution it shall be reset to the original
@@ -117,16 +147,7 @@ public class JavaParserTester {
 			e1.printStackTrace();
 		}
 		
-		/*for(SimpleEntry p:results){
-			
-			try {
-				Files.write(file, (p.getKey()+ "||" + p.getValue()+" __ ").getBytes(), StandardOpenOption.APPEND);
-			} catch (IOException e) {
-				System.out.println("ERROR WRITING TO FILE");
-				e.printStackTrace();
-			}
-			System.out.println(p.getKey()+ " " + p.getValue());
-		}*/
+	
 		
 		for(Result r : final_results_array){
 			r.PrintResult();
@@ -139,34 +160,34 @@ public class JavaParserTester {
 		}
 		if(secondaryAction.equals("MAX_ABS_ERROR"))
 		{
-			calculateError(max_abs_error,reference);
+			calculateError(max_abs_error,reference, args[1]);
 		}
 		
 		if(secondaryAction.equals("FLAG"))
 		{
-			calculateErrorFlag(flag);
+			calculateErrorFlag(flag, args[1]);
 		}
 	}
 
-	private static void calculateErrorFlag(int flaggerino) {
+	private static void calculateErrorFlag(int flaggerino, String filename) {
 		Flag flaghandler = new Flag();
 		try {
 			flaghandler.parseFile();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		flaghandler.calculateError(flag);
+		flaghandler.calculateError(flag, filename);
 		
 	}
 	
-	private static void calculateError(int max_abs_error2, double reference2) {
+	private static void calculateError(int max_abs_error2, double reference2, String filename) {
 		ResultAbsError handler = new ResultAbsError();
 		try {
 			handler.parseFile();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		handler.calculateError(max_abs_error, reference);
+		handler.calculateError(max_abs_error, reference, filename);
 		
 	}
 
